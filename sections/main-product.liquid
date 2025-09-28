@@ -676,6 +676,30 @@
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
           {%- endfor -%}
+          {% if product.metafields.custom.product_specifications.value %}
+            {% assign specs = product.metafields.custom.product_specifications.value %}
+            <div class="product-specifications">
+              <h3>Product Specifications</h3>
+              <ul>
+                {% if specs.material != blank %}
+                  <li><strong>Material:</strong> {{ specs.material }}</li>
+                {% endif %}
+                {% if specs.dimensions != blank %}
+                  <li><strong>Dimensions:</strong> {{ specs.dimensions }}</li>
+                {% endif %}
+                {% if specs.weight != blank %}
+                  <li><strong>Weight:</strong> {{ specs.weight }} kg</li>
+                {% endif %}
+                {% if specs.care_instructions != blank %}
+                  <li><strong>Care Instructions:</strong> {{ specs.care_instructions }}</li>
+                {% endif %}
+                {% if specs.warranty_period != blank %}
+                  <li><strong>Warranty Period:</strong> {{ specs.warranty_period }}</li>
+                {% endif %}
+              </ul>
+            </div>
+          {% endif %}
+          
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
             {{ 'products.product.view_full_details' | t }}
             {{- 'icon-arrow.svg' | inline_asset_content -}}
