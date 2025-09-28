@@ -33,6 +33,25 @@
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
+    
+    {% if request.page_type == 'product' %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Check if this is a free gift product by checking the product handle or other identifier
+          const productHandle = '{{ product.handle }}';
+          const isFreeGift = productHandle === 'free-gift';
+          
+          if (isFreeGift) {
+            // Show alert to the user
+            alert('This is a free gift product and cannot be accessed directly.');
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+              window.location.href = '/collections/all';
+            }, 1000);
+          }
+        });
+      </script>
+    {% endif %}
     <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
 
     {%- if settings.animations_reveal_on_scroll -%}
