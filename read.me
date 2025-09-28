@@ -1,0 +1,187 @@
+
+
+
+Note:
+Use [ A Classic Unisex T-Shirt ] product for testing (Recommended).
+
+============================================= Product with Options and Variants & Discount coupon =============================
+Add a product to cart with a quantity , automatically free product will be added. go to checkout a 10 value discount coupon will be applied.
+To select the free product use product metafield in admin panel.
+
+Related product section is displayed below product on product page.
+
+=========================Search Functionality==================================
+Search bar is displayed on top of the page.Search for the product results will be displayed below search bar.
+
+
+=========================Market Selection==================================
+Market selector is displayed in the header or footer.
+Market selector is used to select the market which changes the pricing and language as well.
+
+
+
+# 🛠 Shopify Flow Automations
+
+This repository documents custom **Shopify Flow automations** for inventory management, customer segmentation, and order processing.  
+Each flow is designed to improve store operations by reducing manual tasks and ensuring timely actions.
+
+---
+
+## 📦 1. Inventory Management Flow
+
+### Purpose
+Automatically detect when a product’s inventory is low and notify the admin for restocking.
+
+### Trigger
+- **Inventory quantity changed**
+
+### Condition
+- `productVariant inventory quantity < 5`
+
+### Actions
+1. Add product tag → `Low Stock`  
+2. Send internal email notification:
+   - **Recipient:** Store admin (must be a staff account under *Settings → Users and permissions*)  
+   - **Subject:**
+     ```
+     Low Stock Alert
+     ```
+   - **Body:**
+     ```
+     The product {{ product.title }} {{ productVariant }} is low on stock. 
+     ```
+
+### Outcome
+- Products are tagged with `Low Stock`.
+- Admin receives an internal email notification.Results will be shown below in app.Currently i have used personal mail id for testing.
+
+Images: 
+inventory Management Flow.png
+mail.png
+---
+
+
+## 👥 2. Customer Segmentation Flow
+
+Note: Test order(Bogus gateway) will not work for this
+### Purpose
+Identify first-time buyers and automatically add them to a marketing segment.
+
+### Trigger
+- **Order created**
+
+### Condition
+- `customer.order_index = 1`
+
+### Actions
+1. Add customer to segment → `First Time Buyers`  
+
+### Outcome
+- First-time buyers are segmented.
+
+Images: 
+Customer Segmentation Flow.png
+---
+
+## 💰 3. Order Processing Flow
+
+### Purpose
+Flag high-value orders (>$100) and notify staff to prioritize fulfillment.
+
+### Trigger
+- **Order created**
+
+### Condition
+- `order.total_price > 100`
+
+### Actions
+1. Add order tag → `High Value Order`  
+2. Send internal email notification:
+   - **Recipient:** Fulfillment/admin staff  
+   - **Subject:**
+     ```
+     High Value Order
+     ```
+   - **Body:**
+     ```
+     High Value Order Received
+     ```
+
+### Outcome
+- High-value orders are tagged.  
+- Fulfillment staff receives an internal notification to prioritize processing.
+- Currently i have used personal mail id for testing.
+
+
+---
+
+## 📸 Images
+Order Processing Flow.png
+mail.png
+---
+
+====================================================================================
+Market:
+## 📸 Images
+Market.png
+Market2.png
+MarketPriceUSA.png (English Language)
+MarketPriceCAD.png (French Language)
+USAShippingCharges.png
+CADShippingCharges.png
+
+
+===================================
+Metaobject:
+Metaobject.png
+Metaobject2.png
+MetaobjetCode.png
+
+====================================
+COde for free product add to cart:
+
+    const freeProductId = formData.get('properties[_free_product_id]');
+    if (freeProductId) {
+      try {
+        // Get the quantity of the paid product (default to 1 if not specified)
+        const paidProductQuantity = formData.get('quantity') || '1';
+        
+        // Create a new form data for the free product
+        const freeProductFormData = new FormData();
+        freeProductFormData.append('id', freeProductId);
+        freeProductFormData.append('quantity', paidProductQuantity);
+        
+        // Add sections data if cart exists
+        if (this.cart) {
+          freeProductFormData.append(
+            'sections',
+            this.cart.getSectionsToRender().map((section) => section.id)
+          );
+          freeProductFormData.append('sections_url', window.location.pathname);
+        }
+
+        // Add the free product to cart
+        const freeProductResponse = await fetch(`${routes.cart_add_url}`, {
+          ...config,
+          body: freeProductFormData
+        }).then(res => res.json());
+
+        if (freeProductResponse.status) {
+          console.error('Failed to add free product to cart:', freeProductResponse);
+        } else {
+          // Update the response with the latest cart data including the free product
+          response = freeProductResponse;
+        }
+      } catch (error) {
+        console.error('Error adding free product to cart:', error);
+      }
+    }
+
+    if (!this.cart) {
+      window.location = window.routes.cart_url;
+      return;
+    }
+
+=================================
+Predictive Search:
+PredictiveSearch.png
