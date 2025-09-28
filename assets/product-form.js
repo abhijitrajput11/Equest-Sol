@@ -42,9 +42,10 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
+        // First, add the main product to cart
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
-          .then((response) => {
+          .then(async (response) => {
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
                 source: 'product-form',
@@ -61,7 +62,47 @@ if (!customElements.get('product-form')) {
               soldOutMessage.classList.remove('hidden');
               this.error = true;
               return;
-            } else if (!this.cart) {
+            }
+
+            // Check if there's a free product to add
+            const freeProductId = formData.get('properties[_free_product_id]');
+            if (freeProductId) {
+              try {
+                // Get the quantity of the paid product (default to 1 if not specified)
+                const paidProductQuantity = formData.get('quantity') || '1';
+                
+                // Create a new form data for the free product
+                const freeProductFormData = new FormData();
+                freeProductFormData.append('id', freeProductId);
+                freeProductFormData.append('quantity', paidProductQuantity);
+                
+                // Add sections data if cart exists
+                if (this.cart) {
+                  freeProductFormData.append(
+                    'sections',
+                    this.cart.getSectionsToRender().map((section) => section.id)
+                  );
+                  freeProductFormData.append('sections_url', window.location.pathname);
+                }
+
+                // Add the free product to cart
+                const freeProductResponse = await fetch(`${routes.cart_add_url}`, {
+                  ...config,
+                  body: freeProductFormData
+                }).then(res => res.json());
+
+                if (freeProductResponse.status) {
+                  console.error('Failed to add free product to cart:', freeProductResponse);
+                } else {
+                  // Update the response with the latest cart data including the free product
+                  response = freeProductResponse;
+                }
+              } catch (error) {
+                console.error('Error adding free product to cart:', error);
+              }
+            }
+
+            if (!this.cart) {
               window.location = window.routes.cart_url;
               return;
             }
